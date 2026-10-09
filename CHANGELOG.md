@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.0
+
+First release.
 
 - Risky dependencies are marked in `package.json` (Problems panel, CodeLens), with a hover
   listing each finding and what to do. Packages brought in by a dependency are shown on

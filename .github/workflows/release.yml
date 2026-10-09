@@ -1,0 +1,51 @@
+name: release
+
+# Push a tag like v0.1.0 (matching "version" in package.json) to publish:
+#   1. lint, typecheck and test, as in ci.yml
+#   2. package the .vsix and attach it to a GitHub release
+#   3. publish it to the VS Code Marketplace (secret VSCE_PAT) and Open VSX (secret OVSX_PAT)
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+      - name: Tag matches package.json
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: xvfb-run -a npm test
+      - name: Package
+        run: npx vsce package --no-dependencies --out "safe-install-${GITHUB_REF_NAME#v}.vsix"
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=$(awk -v v="## ${GITHUB_REF_NAME#v}" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md)
+          gh release create "$GITHUB_REF_NAME" "safe-install-${GITHUB_REF_NAME#v}.vsix" \
+            --title "$GITHUB_REF_NAME" --notes "${notes:-See CHANGELOG.md}"
+      - name: VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --packagePath "safe-install-${GITHUB_REF_NAME#v}.vsix"
+      - name: Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: npx ovsx publish "safe-install-${GITHUB_REF_NAME#v}.vsix"

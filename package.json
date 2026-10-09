@@ -2,7 +2,7 @@
   "name": "safe-install",
   "displayName": "safe-install",
   "description": "See the supply-chain risk of your npm, pnpm, Yarn and bun dependencies in the editor, and approve install scripts yourself.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "publisher": "crossben",
   "license": "Apache-2.0",
   "repository": {
