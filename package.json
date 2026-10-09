@@ -1,0 +1,64 @@
+{
+  "name": "safe-install",
+  "displayName": "safe-install",
+  "description": "See the supply-chain risk of your npm, pnpm, Yarn and bun dependencies in the editor, and approve install scripts yourself.",
+  "version": "0.0.0",
+  "publisher": "crossben",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crossben/safe-install-vscode"
+  },
+  "homepage": "https://github.com/crossben/safe-install",
+  "engines": {
+    "vscode": "^1.95.0",
+    "node": ">=20"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "npm",
+    "security",
+    "supply chain",
+    "postinstall",
+    "dependencies"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "workspaceContains:**/package.json"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "safe-install reads project files such as .npmrc and .safe-install.json, which come from the repository. In Restricted Mode it runs nothing."
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {},
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint .",
+    "pretest": "npm run build && tsc -p tsconfig.test.json",
+    "test": "node out/test/integration/runTest.js",
+    "package": "vsce package --no-dependencies",
+    "vscode:prepublish": "node esbuild.mjs --production"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/mocha": "10.0.10",
+    "@types/node": "20.19.43",
+    "@types/vscode": "1.95.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "eslint": "10.12.0",
+    "mocha": "12.0.3",
+    "ovsx": "1.2.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1"
+  }
+}
