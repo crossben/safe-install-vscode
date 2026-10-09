@@ -50,8 +50,18 @@ jobs:
       - name: Open VSX
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        run: npx ovsx publish "safe-install-${GITHUB_REF_NAME#v}.vsix" --skip-duplicate
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "::warning::Open VSX skipped: no OVSX_PAT repository secret (Settings > Secrets and variables > Actions)"
+            exit 0
+          fi
+          npx ovsx publish "safe-install-${GITHUB_REF_NAME#v}.vsix" --skip-duplicate
       - name: VS Code Marketplace
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx vsce publish --packagePath "safe-install-${GITHUB_REF_NAME#v}.vsix" --skip-duplicate
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::warning::VS Code Marketplace skipped: no VSCE_PAT repository secret (Settings > Secrets and variables > Actions)"
+            exit 0
+          fi
+          npx vsce publish --packagePath "safe-install-${GITHUB_REF_NAME#v}.vsix" --skip-duplicate
