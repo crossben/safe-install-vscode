@@ -1,0 +1,41 @@
+{
+  "format": "npm",
+  "lockfile": "package-lock.json",
+  "worst": "block",
+  "skipped": 0,
+  "failed": 0,
+  "warnings": [],
+  "packages": [
+    {
+      "id": "lodahs@1.0.0",
+      "name": "lodahs",
+      "version": "1.0.0",
+      "direct": true,
+      "dev": false,
+      "score": 100,
+      "level": "block",
+      "findings": [
+        {
+          "rule": "SI-DEP-001",
+          "severity": "low",
+          "message": "version not found in the registry (unpublished?)"
+        },
+        {
+          "rule": "SI-POP-001",
+          "severity": "high",
+          "message": "name looks like the popular package \"lodash\""
+        },
+        {
+          "rule": "SI-VUL-001",
+          "severity": "medium",
+          "message": "GHSA-hm6q-r2jc-cpqh: lodahs is malware (high)"
+        },
+        {
+          "rule": "SI-VUL-001",
+          "severity": "block",
+          "message": "known malicious package (MAL-2025-25502)"
+        }
+      ]
+    }
+  ]
+}

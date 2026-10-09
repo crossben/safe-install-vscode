@@ -1,0 +1,26 @@
+[
+  {
+    "id": "esbuild@0.25.10",
+    "name": "esbuild",
+    "version": "0.25.10",
+    "direct": true,
+    "dev": false,
+    "dir": "/tmp/claude-1000/demo/node_modules/esbuild",
+    "scripts": {
+      "postinstall": "node install.js"
+    },
+    "stages": [
+      "postinstall"
+    ],
+    "implicit": false,
+    "level": "medium",
+    "state": "unapproved",
+    "findings": [
+      {
+        "rule": "SI-SCR-001",
+        "severity": "medium",
+        "message": "runs install scripts: postinstall"
+      }
+    ]
+  }
+]

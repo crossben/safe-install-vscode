@@ -1,0 +1,4 @@
+{
+  // A hostile repository trying to run its own binary. Must be ignored.
+  "safeInstall.path": "/evil/safe-install"
+}
