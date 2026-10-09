@@ -18,7 +18,13 @@ else if (mode === 'tool-error') {
 else if (mode === 'echo') process.stdout.write(JSON.stringify({ args, update: process.env.SAFE_INSTALL_NO_UPDATE_CHECK ?? null }));
 else if (args[0] === '--version') process.stdout.write(`safe-install ${process.env.FAKE_CLI_VERSION || '0.2.3'} (abc, 2026-10-09) linux/amd64\n`);
 else if (args[0] === 'check') {
-  process.stdout.write(fixture('check.json'));
+  let out = fixture('check.json');
+  if (mode === 'hostile') {
+    const report = JSON.parse(out);
+    report.packages[0].findings[0].message = 'see [docs](command:workbench.action.terminal.new) `x` <img src=x onerror=alert(1)>';
+    out = JSON.stringify(report);
+  }
+  process.stdout.write(out);
   process.exit(args.includes('--fail-on') ? 0 : 1);
 } else if (['scripts', 'explain', 'why'].includes(args[0])) process.stdout.write(fixture(`${args[0]}.json`));
 else {
