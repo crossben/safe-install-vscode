@@ -116,6 +116,11 @@
         "category": "safe-install"
       },
       {
+        "command": "safeInstall.copyAgentInstructions",
+        "title": "Copy Agent Instructions",
+        "category": "safe-install"
+      },
+      {
         "command": "safeInstall.showOutput",
         "title": "Show Log",
         "category": "safe-install"
@@ -178,7 +183,60 @@
           "when": "isWorkspaceTrusted"
         }
       ]
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "safeInstall.start",
+        "title": "Get started with safe-install",
+        "description": "See supply-chain risks in package.json and approve install scripts yourself.",
+        "steps": [
+          {
+            "id": "install",
+            "title": "Install the safe-install CLI",
+            "description": "The extension displays what the CLI finds.\n[Open Install Docs](https://github.com/crossben/safe-install#get-it)",
+            "media": {
+              "markdown": "media/walkthrough/install.md"
+            },
+            "completionEvents": [
+              "onCommand:safeInstall.checkProject"
+            ]
+          },
+          {
+            "id": "check",
+            "title": "Check your dependencies",
+            "description": "Risky dependencies are marked in package.json.\n[Check Dependencies](command:safeInstall.checkProject)",
+            "media": {
+              "markdown": "media/walkthrough/check.md"
+            },
+            "completionEvents": [
+              "onCommand:safeInstall.checkProject"
+            ]
+          },
+          {
+            "id": "scripts",
+            "title": "Review install scripts",
+            "description": "Approve only the scripts you trust.\n[Open Install Scripts](command:safeInstall.scripts.focus)",
+            "media": {
+              "markdown": "media/walkthrough/scripts.md"
+            },
+            "completionEvents": [
+              "onView:safeInstall.scripts"
+            ]
+          },
+          {
+            "id": "agents",
+            "title": "Tell your AI agent",
+            "description": "Copy instructions for Claude Code, Codex, Cursor\u2026\n[Copy Agent Instructions](command:safeInstall.copyAgentInstructions)",
+            "media": {
+              "markdown": "media/walkthrough/agents.md"
+            },
+            "completionEvents": [
+              "onCommand:safeInstall.copyAgentInstructions"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "build": "node esbuild.mjs",
@@ -204,5 +262,10 @@
     "ovsx": "1.2.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.71.1"
+  },
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0a0a0b",
+    "theme": "dark"
   }
 }

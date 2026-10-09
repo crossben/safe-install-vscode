@@ -44,6 +44,13 @@ export function activate(context: vscode.ExtensionContext): Api {
       const name = spec ?? (await vscode.window.showInputBox({ title: 'Why is this package here?', prompt: 'Package name, optionally @version' }));
       if (folder && name) await showWhy(safeInstall, folder, name);
     }),
+    vscode.commands.registerCommand('safeInstall.copyAgentInstructions', async () => {
+      const cwd = checker.projectDirs()[0] ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd();
+      const guide = await safeInstall.text(['llm'], cwd);
+      if (guide === undefined) return;
+      await vscode.env.clipboard.writeText(guide);
+      void vscode.window.showInformationMessage('Copied the agent instructions. Paste them into AGENTS.md, CLAUDE.md or your agent\'s rules.');
+    }),
     vscode.commands.registerCommand('safeInstall.explainRule', (rule?: string) => {
       const folder = checker.projectDirs()[0] ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       return folder ? explainRule(safeInstall, folder, rule) : undefined;

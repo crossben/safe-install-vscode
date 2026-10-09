@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { packageArg } from './cli';
 import { byDependency, MAX_TRANSITIVE, risky, type DependencyResult } from './findings';
 import { declaredDependencies } from './manifest';
-import { levelRank, parseCheck, parseExplanations, parseWhy, type Explanation, type Level } from './model';
+import { levelRank, parseCheck, parseExplanations, parseWhy, type Explanation, type Finding, type Level } from './model';
 import type { SafeInstall } from './service';
 import { codeSpan } from './text';
 
@@ -169,7 +169,7 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
       if (!r) continue;
       const d = new vscode.Diagnostic(new vscode.Range(doc.positionAt(dep.start), doc.positionAt(dep.end)), summary(r), SEVERITY[r.level]);
       d.source = 'safe-install';
-      const rule = r.own?.findings[0]?.rule ?? r.via[0]?.pkg.findings[0]?.rule;
+      const rule = ordered(r)[0]?.rule;
       if (rule) d.code = rule;
       diags.push(d);
     }
@@ -191,7 +191,7 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
       ? '$(sync~spin) safe-install'
       : worst === 'none'
         ? '$(shield) safe-install'
-        : `$(${levelRank(worst) >= levelRank('high') ? 'error' : 'warning'}) safe-install: ${count > 0 ? `${String(count)} high` : worst}`;
+        : `$(${levelRank(worst) >= levelRank('high') ? 'error' : 'warning'}) safe-install: ${count > 0 ? `${String(count)} high-risk` : worst}`;
     this.status.tooltip = worst === 'none' ? 'No risky dependencies found' : `Worst level: ${worst}. Click to see the Problems panel.`;
     if (this.projects.size > 0) this.status.show();
     this.lensChanged.fire();
@@ -216,7 +216,7 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
     md.appendMarkdown(`**safe-install: ${r.level.toUpperCase()}**\n\n`);
     const rules = new Set<string>();
     const findingsOf = (pkg: NonNullable<DependencyResult['own']>) => {
-      for (const f of pkg.findings) {
+      for (const f of [...pkg.findings].sort((a, b) => levelRank(b.severity) - levelRank(a.severity))) {
         rules.add(f.rule);
         md.appendMarkdown(`- ${codeSpan(f.rule)} ${f.severity}: ${codeSpan(f.message)}\n`);
       }
@@ -275,15 +275,23 @@ function cancelled(token: vscode.CancellationToken): boolean {
   return token.isCancellationRequested;
 }
 
+/** All findings behind a result, worst first. */
+function ordered(r: DependencyResult): Finding[] {
+  return [...(r.own?.findings ?? []), ...r.via.flatMap((v) => v.pkg.findings)].sort((a, b) => levelRank(b.severity) - levelRank(a.severity));
+}
+
+/** One line: the worst finding, and how many more there are. */
 function summary(r: DependencyResult): string {
-  const parts: string[] = [];
-  if (r.own) parts.push(...r.own.findings.map((f) => `${f.rule} ${f.message}`));
-  for (const v of r.via) parts.push(`via ${v.pkg.id}: ${v.pkg.findings.map((f) => f.rule).join(', ')}`);
-  return `${r.level.toUpperCase()}: ${parts.join('; ')}`;
+  const all = ordered(r);
+  const [worst] = all;
+  if (!worst) return r.level.toUpperCase();
+  const where = r.own ? '' : ` (via ${r.via[0]?.pkg.id ?? ''})`;
+  const more = all.length > 1 ? ` (+${String(all.length - 1)} more)` : '';
+  return `${r.level.toUpperCase()}${where}: ${worst.rule} ${worst.message}${more}`;
 }
 
 function lensTitle(r: DependencyResult): string {
-  const rules = [...new Set([...(r.own?.findings ?? []), ...r.via.flatMap((v) => v.pkg.findings)].map((f) => f.rule))];
+  const rules = [...new Set(ordered(r).map((f) => f.rule))];
   const first = rules[0] ?? '';
   return `safe-install: ${r.level.toUpperCase()} · ${first}${rules.length > 1 ? ` +${String(rules.length - 1)}` : ''}`;
 }

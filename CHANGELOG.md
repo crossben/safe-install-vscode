@@ -13,6 +13,9 @@
   approved from the editor (the CLI needs `--force`, which you run yourself).
 - Quick fixes on markers: "Why is this package here?" (dependency chains) and "Explain
   rule".
+- Get-started walkthrough; **Copy Agent Instructions** (`safe-install llm`) for AI coding
+  agents; install or update command for your OS when the CLI is missing or too old.
+- Findings are ordered worst first in markers, CodeLens and hovers.
 - Status bar shows the worst level in the workspace.
 - Settings: `safeInstall.path` (user settings only), `checkOnSave`, `diffBase`,
   `minSeverity`, `codeLens`, `timeoutSeconds`.

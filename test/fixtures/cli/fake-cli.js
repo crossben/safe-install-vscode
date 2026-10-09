@@ -17,6 +17,7 @@ else if (mode === 'tool-error') {
 } else if (mode === 'not-json') process.stdout.write('hello\n');
 else if (mode === 'echo') process.stdout.write(JSON.stringify({ args, update: process.env.SAFE_INSTALL_NO_UPDATE_CHECK ?? null }));
 else if (args[0] === '--version') process.stdout.write(`safe-install ${process.env.FAKE_CLI_VERSION || '0.2.3'} (abc, 2026-10-09) linux/amd64\n`);
+else if (args[0] === 'llm') process.stdout.write('# safe-install: instructions for AI coding agents\n');
 else if (args[0] === 'check') {
   let out = fixture('check.json');
   if (mode === 'hostile') {

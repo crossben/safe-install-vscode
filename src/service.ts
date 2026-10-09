@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { CliError, runJSON, run, type CliCommand } from './cli';
+import { DOCS_URL, installHint } from './install';
 import { MIN_CLI_VERSION, atLeast, isDevBuild, parseVersionLine } from './version';
 
 export type CliStatus =
@@ -8,7 +9,6 @@ export type CliStatus =
   | { readonly kind: 'missing'; readonly detail: string }
   | { readonly kind: 'outdated'; readonly version: string };
 
-const INSTALL_URL = 'https://github.com/crossben/safe-install#get-it';
 
 /**
  * The CLI path comes from user settings only. `safeInstall.path` is declared
@@ -106,23 +106,39 @@ export class SafeInstall implements vscode.Disposable {
         break;
       case 'missing':
         this.log.warn(status.detail);
-        void vscode.window
-          .showWarningMessage('safe-install CLI not found. Install it, or set "safeInstall.path" in your user settings.', 'How to install')
-          .then((pick) => {
-            if (pick) void vscode.env.openExternal(vscode.Uri.parse(INSTALL_URL));
-          });
+        void this.offerInstall('safe-install CLI not found. The extension needs it to check your dependencies.', false);
         break;
       case 'outdated':
-        void vscode.window
-          .showWarningMessage(
-            `safe-install ${status.version} is too old for this extension (needs ${MIN_CLI_VERSION} or later). Update it.`,
-            'How to update',
-          )
-          .then((pick) => {
-            if (pick) void vscode.env.openExternal(vscode.Uri.parse(INSTALL_URL));
-          });
+        void this.offerInstall(`safe-install ${status.version} is too old for this extension (needs ${MIN_CLI_VERSION} or later).`, true);
         break;
     }
+  }
+
+  private async offerInstall(message: string, update: boolean): Promise<void> {
+    const hint = installHint(process.platform, update);
+    const copy = hint.command ? `Copy ${update ? 'Update' : 'Install'} Command` : undefined;
+    const actions = [copy, 'Open Install Docs', ...(update ? [] : ['Set Path…'])].filter((a): a is string => a !== undefined);
+    const pick = await vscode.window.showWarningMessage(`${message} ${update ? 'Update' : 'Install'} it with ${hint.how}.`, ...actions);
+    if (pick === copy && hint.command) {
+      await vscode.env.clipboard.writeText(hint.command);
+      void vscode.window.showInformationMessage(`Copied: ${hint.command}`);
+    } else if (pick === 'Open Install Docs') {
+      await vscode.env.openExternal(vscode.Uri.parse(DOCS_URL));
+    } else if (pick === 'Set Path…') {
+      await vscode.commands.executeCommand('workbench.action.openSettings', 'safeInstall.path');
+    }
+  }
+
+  /** Runs a command that prints text (not JSON), e.g. `llm`. */
+  async text(args: readonly string[], cwd: string): Promise<string | undefined> {
+    const status = await this.getStatus();
+    if (status.kind !== 'ready') {
+      this.explain(status);
+      return undefined;
+    }
+    const res = await run(cliCommand(), args, { cwd, timeoutMs: timeoutMs() });
+    if (res.code !== 0) throw new CliError(res.stderr.trim() || `safe-install exited with ${String(res.code)}`, 'tool-error', res.stderr);
+    return res.stdout;
   }
 
   dispose(): void {

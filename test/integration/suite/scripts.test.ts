@@ -91,3 +91,16 @@ describeUnix('install scripts view', () => {
     assert.equal(vscode.window.terminals.length, 0);
   });
 });
+
+describeUnix('agent instructions', () => {
+  afterEach(async () => {
+    await vscode.workspace.getConfiguration('safeInstall').update('path', undefined, vscode.ConfigurationTarget.Global);
+  });
+
+  it('copies `safe-install llm` to the clipboard', async () => {
+    await view();
+    await vscode.env.clipboard.writeText('');
+    await vscode.commands.executeCommand('safeInstall.copyAgentInstructions');
+    assert.match(await vscode.env.clipboard.readText(), /^# safe-install: instructions for AI coding agents/);
+  });
+});

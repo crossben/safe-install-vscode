@@ -32,7 +32,8 @@ describeUnix('dependency markers', () => {
     const [d] = diags;
     assert.ok(d);
     assert.equal(d.severity, vscode.DiagnosticSeverity.Error);
-    assert.match(d.message, /^BLOCK: /);
+    assert.match(d.message, /^BLOCK: SI-VUL-001 known malicious package \(MAL-[0-9-]+\) \(\+3 more\)$/);
+    assert.equal(d.code, 'SI-VUL-001'); // the worst finding, not the first
     const doc = await vscode.workspace.openTextDocument(manifest);
     assert.equal(doc.getText(d.range), 'lodahs');
   });
