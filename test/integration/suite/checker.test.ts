@@ -66,3 +66,19 @@ describeUnix('dependency markers', () => {
     for (const bad of ['](', '<img', 'command:']) assert.ok(!outside.includes(bad), `${bad} outside a code span:\n${md.value}`);
   });
 });
+
+describeUnix('quick fixes', () => {
+  afterEach(async () => {
+    await vscode.workspace.getConfiguration('safeInstall').update('path', undefined, vscode.ConfigurationTarget.Global);
+  });
+
+  it('offers "why" and "explain" on a marked dependency', async () => {
+    await checked();
+    const [d] = vscode.languages.getDiagnostics(manifest).filter((x) => x.source === 'safe-install');
+    assert.ok(d);
+    const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>('vscode.executeCodeActionProvider', manifest, d.range);
+    const titles = actions.map((a) => a.title);
+    assert.ok(titles.includes('Why is lodahs here? (safe-install)'), titles.join(', '));
+    assert.ok(titles.some((t) => /^Explain SI-[A-Z]+-\d{3} \(safe-install\)$/.test(t)), titles.join(', '));
+  });
+});

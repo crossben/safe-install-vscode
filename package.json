@@ -94,11 +94,91 @@
         "icon": "$(shield)"
       },
       {
+        "command": "safeInstall.approve",
+        "title": "Approve Install Scripts\u2026",
+        "category": "safe-install",
+        "icon": "$(check)"
+      },
+      {
+        "command": "safeInstall.refreshScripts",
+        "title": "Refresh Install Scripts",
+        "category": "safe-install",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "safeInstall.why",
+        "title": "Why Is This Package Here?",
+        "category": "safe-install"
+      },
+      {
+        "command": "safeInstall.explainRule",
+        "title": "Explain Rule",
+        "category": "safe-install"
+      },
+      {
         "command": "safeInstall.showOutput",
         "title": "Show Log",
         "category": "safe-install"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "safeInstall.scripts",
+          "name": "Install Scripts",
+          "icon": "$(shield)",
+          "contextualTitle": "safe-install"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "safeInstall.scripts",
+        "contents": "No installed package wants to run install scripts, or the project has not been installed yet.\n[Check Dependencies](command:safeInstall.checkProject)",
+        "when": "isWorkspaceTrusted"
+      },
+      {
+        "view": "safeInstall.scripts",
+        "contents": "safe-install does not run in Restricted Mode: it reads project files that come from this repository.\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "when": "!isWorkspaceTrusted"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "safeInstall.refreshScripts",
+          "when": "view == safeInstall.scripts",
+          "group": "navigation"
+        },
+        {
+          "command": "safeInstall.checkProject",
+          "when": "view == safeInstall.scripts",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "safeInstall.approve",
+          "when": "view == safeInstall.scripts && viewItem == safeInstall.pkg.pending",
+          "group": "inline"
+        },
+        {
+          "command": "safeInstall.approve",
+          "when": "view == safeInstall.scripts && viewItem == safeInstall.pkg.pending",
+          "group": "1_actions"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "safeInstall.approve",
+          "when": "isWorkspaceTrusted"
+        },
+        {
+          "command": "safeInstall.refreshScripts",
+          "when": "isWorkspaceTrusted"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "node esbuild.mjs",

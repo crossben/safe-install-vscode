@@ -45,6 +45,9 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
   readonly onDidChangeCodeLenses = this.lensChanged.event;
   private explanations: Promise<Map<string, Explanation>> | undefined;
   private readonly disposables: vscode.Disposable[] = [];
+  private readonly checked = new vscode.EventEmitter<void>();
+  /** Fires after a round of checks, so other views can refresh. */
+  readonly onDidCheck = this.checked.event;
   /** Resolves when every pending check has finished (tests). */
   idle: Promise<void> = Promise.resolve();
 
@@ -59,6 +62,7 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
       this.diagnostics,
       this.status,
       this.lensChanged,
+      this.checked,
       vscode.languages.registerHoverProvider(manifests, this),
       vscode.languages.registerCodeLensProvider(manifests, this),
       vscode.workspace.onDidSaveTextDocument((doc) => {
@@ -83,6 +87,11 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
       }
     }
     await Promise.all([...this.projects.values()].map((p) => this.check(p)));
+    this.checked.fire();
+  }
+
+  projectDirs(): string[] {
+    return [...this.projects.keys()];
   }
 
   private onSaved(uri: vscode.Uri): void {
@@ -96,7 +105,9 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
     // Saving package.json and the lockfile together runs one check.
     if (project.timer) clearTimeout(project.timer);
     project.timer = setTimeout(() => {
-      void this.check(project);
+      void this.check(project).then(() => {
+        this.checked.fire();
+      });
     }, 600);
   }
 

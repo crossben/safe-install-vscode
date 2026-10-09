@@ -26,6 +26,11 @@ else if (args[0] === 'check') {
   }
   process.stdout.write(out);
   process.exit(args.includes('--fail-on') ? 0 : 1);
+} else if (args[0] === 'scripts' && mode.startsWith('scripts-')) {
+  const [pkg] = JSON.parse(fixture('scripts.json'));
+  if (mode === 'scripts-high') Object.assign(pkg, { level: 'high' });
+  if (mode === 'scripts-hostile') Object.assign(pkg, { id: '--force@1.0.0', name: '--force' });
+  process.stdout.write(JSON.stringify([pkg]));
 } else if (['scripts', 'explain', 'why'].includes(args[0])) process.stdout.write(fixture(`${args[0]}.json`));
 else {
   process.stderr.write(`safe-install: unknown command ${args[0]}\n`);

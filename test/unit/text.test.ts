@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import { codeSpan } from '../../src/text';
+import { codeSpan, plain } from '../../src/text';
 
 describe('codeSpan', () => {
   it('cannot be closed early or carry line breaks', () => {
@@ -11,5 +11,11 @@ describe('codeSpan', () => {
   it('clips long text and never renders empty', () => {
     assert.ok(codeSpan('x'.repeat(1000)).length < 310);
     assert.equal(codeSpan(''), '` `');
+  });
+});
+
+describe('plain (quick pick text)', () => {
+  it('cannot render icons or break lines', () => {
+    assert.equal(plain('$(alert) evil\nline'), '$\u200b(alert) evil line');
   });
 });

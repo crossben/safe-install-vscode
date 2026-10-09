@@ -6,6 +6,13 @@
   listing each finding and what to do. Packages brought in by a dependency are shown on
   that dependency, with the chain. Re-checked on save; `safe-install: Check Dependencies`
   checks on demand.
+- **Install Scripts** view (Explorer): installed packages that want to run scripts, grouped
+  into "Needs your approval" and "Approved", with their scripts and findings.
+- **Approve…**: shows the scripts and findings, and on an explicit yes runs
+  `safe-install approve <package>` in a visible terminal. High-risk packages are never
+  approved from the editor (the CLI needs `--force`, which you run yourself).
+- Quick fixes on markers: "Why is this package here?" (dependency chains) and "Explain
+  rule".
 - Status bar shows the worst level in the workspace.
 - Settings: `safeInstall.path` (user settings only), `checkOnSave`, `diffBase`,
   `minSeverity`, `codeLens`, `timeoutSeconds`.
