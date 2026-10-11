@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- Python and PHP: risky dependencies are marked in `pyproject.toml`, `requirements.txt`,
+  `Pipfile` and `composer.json` (projects with `uv.lock`, `poetry.lock`, `Pipfile.lock`,
+  `requirements.txt` or `composer.lock`). The Install Scripts view lists Python source builds
+  and Composer plugins. Needs safe-install 0.3.0 or later.
+
 ## 0.1.0
 
 First release.

@@ -1,7 +1,7 @@
 # safe-install for VS Code
 
-See the supply-chain risk of your npm, pnpm, Yarn and bun dependencies where you edit them,
-and approve install scripts yourself.
+See the supply-chain risk of your dependencies where you edit them (npm, pnpm, Yarn, bun,
+Python and Composer), and approve install scripts, source builds and plugins yourself.
 
 This extension is a front end for the [safe-install](https://github.com/crossben/safe-install)
 command-line tool. Every check is done by the CLI you have installed; the extension only
@@ -11,14 +11,16 @@ displays the results. Works in VS Code, Cursor, Windsurf and VSCodium.
 
 ## What it does
 
-- **Marks risky dependencies in `package.json`**: malware from the OSV database, typosquats,
+- **Marks risky dependencies in `package.json`, `pyproject.toml`, `requirements.txt`,
+  `Pipfile` and `composer.json`**: malware from the OSV database, typosquats,
   fresh or suspicious releases, integrity problems, packages blocked by your policy. Each one
   appears in the Problems panel, with a CodeLens showing its level.
 - **Explains each finding** on hover: the evidence, and what the rule means and what to do.
   Risky packages pulled in by a dependency are shown on that dependency, with the chain.
 - **Re-checks on save** of `package.json` or the lockfile.
 - **Install Scripts view** (Explorer): the installed packages that want to run `preinstall`,
-  `install` or `postinstall`, and whether you approved them.
+  `install` or `postinstall`, Python packages that must be built from source, and Composer
+  plugins, and whether you approved them.
 - **Approve…** shows exactly what would run, then runs `safe-install approve` in a terminal
   you can see. High-risk scripts are never approved from the editor.
 - **Quick fixes**: "Why is this package here?" and "Explain rule".

@@ -167,7 +167,7 @@ export class ScriptsView implements vscode.TreeDataProvider<Node>, vscode.Dispos
     }
     const ok = await this.confirm(
       `Run the install scripts of ${pkg.id}?`,
-      `${lines.join('\n')}\n\nsafe-install records the approval in .safe-install.json, pinned to these scripts, and runs them now.`,
+      `${lines.join('\n')}\n\nsafe-install records the approval in .safe-install.json, pinned to exactly this content. Install scripts run now; a Python source build or a Composer plugin is used at the next safe-install install.`,
       'Approve and Run',
     );
     if (!ok) return undefined;

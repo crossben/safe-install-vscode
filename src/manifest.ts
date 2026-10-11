@@ -8,14 +8,15 @@
 export const DEPENDENCY_SECTIONS = ['dependencies', 'devDependencies', 'optionalDependencies'] as const;
 
 export interface DeclaredDependency {
+  /** As the CLI names it: npm as written, Python normalized (PEP 503), Composer lowercase. */
   readonly name: string;
-  readonly section: (typeof DEPENDENCY_SECTIONS)[number];
+  readonly section: string;
   /** Offsets of the key, quotes excluded. */
   readonly start: number;
   readonly end: number;
 }
 
-export function declaredDependencies(text: string): DeclaredDependency[] {
+export function declaredDependencies(text: string, sections: readonly string[] = DEPENDENCY_SECTIONS): DeclaredDependency[] {
   const out: DeclaredDependency[] = [];
   let i = 0;
 
@@ -54,7 +55,7 @@ export function declaredDependencies(text: string): DeclaredDependency[] {
   };
 
   // section: the dependency section this object is, if any.
-  const value = (depth: number, section?: DeclaredDependency['section']): void => {
+  const value = (depth: number, section?: string): void => {
     ws();
     const c = text[i];
     if (c === '{') {
@@ -77,7 +78,7 @@ export function declaredDependencies(text: string): DeclaredDependency[] {
           out.push({ name: key.value, section, start: key.start, end: key.end });
           value(depth + 1);
         } else {
-          const next = depth === 0 ? DEPENDENCY_SECTIONS.find((s) => s === key.value) : undefined;
+          const next = depth === 0 ? sections.find((s) => s === key.value) : undefined;
           value(depth + 1, next);
         }
         ws();

@@ -2,12 +2,15 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { packageArg } from './cli';
 import { byDependency, MAX_TRANSITIVE, risky, type DependencyResult } from './findings';
-import { declaredDependencies } from './manifest';
+import { LOCKFILES, MANIFEST_FOR, MANIFESTS, manifestDependencies } from './manifests';
 import { levelRank, parseCheck, parseExplanations, parseWhy, type Explanation, type Finding, type Level } from './model';
 import type { SafeInstall } from './service';
 import { codeSpan } from './text';
 
-export const LOCKFILES = ['package-lock.json', 'npm-shrinkwrap.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lock', 'bun.lockb'];
+export { LOCKFILES };
+
+/** Documents that get markers, hovers and CodeLens. */
+export const MANIFEST_SELECTOR: vscode.DocumentSelector = MANIFESTS.map((m) => ({ pattern: `**/${m}` }));
 
 interface ProjectState {
   readonly dir: string;
@@ -57,7 +60,7 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
   ) {
     this.status.name = 'safe-install';
     this.status.command = 'workbench.actions.view.problems';
-    const manifests = { language: 'json', pattern: '**/package.json' };
+    const manifests = MANIFEST_SELECTOR;
     this.disposables.push(
       this.diagnostics,
       this.status,
@@ -80,10 +83,13 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
   /** Finds every project in the workspace and checks them all. */
   async checkAll(): Promise<void> {
     const locks = await vscode.workspace.findFiles(`**/{${LOCKFILES.join(',')}}`, '**/node_modules/**', 200);
-    for (const lock of locks) {
+    // One project per folder; the CLI picks the same lockfile (npm first).
+    const order = (u: vscode.Uri): number => LOCKFILES.indexOf(path.basename(u.fsPath));
+    for (const lock of [...locks].sort((a, b) => order(a) - order(b))) {
       const dir = path.dirname(lock.fsPath);
-      if (!this.projects.has(dir)) {
-        this.projects.set(dir, { dir, manifest: vscode.Uri.file(path.join(dir, 'package.json')), results: new Map(), worst: 'none' });
+      const manifest = MANIFEST_FOR[path.basename(lock.fsPath)];
+      if (!this.projects.has(dir) && manifest) {
+        this.projects.set(dir, { dir, manifest: vscode.Uri.file(path.join(dir, manifest)), results: new Map(), worst: 'none' });
       }
     }
     await Promise.all([...this.projects.values()].map((p) => this.check(p)));
@@ -96,7 +102,7 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
 
   private onSaved(uri: vscode.Uri): void {
     const base = path.basename(uri.fsPath);
-    if (base !== 'package.json' && !LOCKFILES.includes(base)) return;
+    if (!MANIFESTS.includes(base) && !LOCKFILES.includes(base)) return;
     const project = this.projects.get(path.dirname(uri.fsPath));
     if (!project) {
       void this.checkAll(); // a new project, or a lockfile that just appeared
@@ -160,11 +166,11 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
     try {
       text = new TextDecoder().decode(await vscode.workspace.fs.readFile(p.manifest));
     } catch {
-      return; // a lockfile without package.json: nothing to mark
+      return; // a lockfile without its manifest: nothing to mark
     }
     const doc = { positionAt: offsetToPosition(text) };
     const diags: vscode.Diagnostic[] = [];
-    for (const dep of declaredDependencies(text)) {
+    for (const dep of manifestDependencies(path.basename(p.manifest.fsPath), text)) {
       const r = p.results.get(dep.name);
       if (!r) continue;
       const d = new vscode.Diagnostic(new vscode.Range(doc.positionAt(dep.start), doc.positionAt(dep.end)), summary(r), SEVERITY[r.level]);
@@ -199,9 +205,9 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
 
   private resultAt(doc: vscode.TextDocument, pos: vscode.Position): { r: DependencyResult; range: vscode.Range } | undefined {
     const p = this.projects.get(path.dirname(doc.uri.fsPath));
-    if (!p) return undefined;
+    if (p?.manifest.fsPath !== doc.uri.fsPath) return undefined;
     const offset = doc.offsetAt(pos);
-    const dep = declaredDependencies(doc.getText()).find((d) => offset >= d.start - 1 && offset <= d.end + 1);
+    const dep = manifestDependencies(path.basename(doc.uri.fsPath), doc.getText()).find((d) => offset >= d.start - 1 && offset <= d.end + 1);
     const r = dep && p.results.get(dep.name);
     return dep && r ? { r, range: new vscode.Range(doc.positionAt(dep.start), doc.positionAt(dep.end)) } : undefined;
   }
@@ -239,9 +245,9 @@ export class Checker implements vscode.Disposable, vscode.HoverProvider, vscode.
   provideCodeLenses(doc: vscode.TextDocument): vscode.CodeLens[] {
     if (!vscode.workspace.getConfiguration('safeInstall').get<boolean>('codeLens', true)) return [];
     const p = this.projects.get(path.dirname(doc.uri.fsPath));
-    if (!p) return [];
+    if (p?.manifest.fsPath !== doc.uri.fsPath) return [];
     const lenses: vscode.CodeLens[] = [];
-    for (const dep of declaredDependencies(doc.getText())) {
+    for (const dep of manifestDependencies(path.basename(doc.uri.fsPath), doc.getText())) {
       const r = p.results.get(dep.name);
       if (!r) continue;
       const pos = doc.positionAt(dep.start);

@@ -19,7 +19,7 @@ else if (mode === 'echo') process.stdout.write(JSON.stringify({ args, update: pr
 else if (args[0] === '--version') process.stdout.write(`safe-install ${process.env.FAKE_CLI_VERSION || '0.2.3'} (abc, 2026-10-09) linux/amd64\n`);
 else if (args[0] === 'llm') process.stdout.write('# safe-install: instructions for AI coding agents\n');
 else if (args[0] === 'check') {
-  let out = fixture('check.json');
+  let out = fixture(fs.existsSync('composer.lock') ? 'check-composer.json' : 'check.json');
   if (mode === 'hostile') {
     const report = JSON.parse(out);
     report.packages[0].findings[0].message = 'see [docs](command:workbench.action.terminal.new) `x` <img src=x onerror=alert(1)>';

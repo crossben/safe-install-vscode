@@ -1,8 +1,8 @@
 {
   "name": "safe-install",
   "displayName": "safe-install",
-  "description": "See the supply-chain risk of your npm, pnpm, Yarn and bun dependencies in the editor, and approve install scripts yourself.",
-  "version": "0.1.0",
+  "description": "See the supply-chain risk of your npm, pnpm, Yarn, bun, Python and Composer dependencies in the editor, and approve install scripts, source builds and plugins yourself.",
+  "version": "0.2.0",
   "publisher": "crossben",
   "license": "Apache-2.0",
   "repository": {
@@ -19,15 +19,23 @@
     "Other"
   ],
   "keywords": [
+    "composer",
+    "dependencies",
     "npm",
-    "security",
-    "supply chain",
+    "php",
     "postinstall",
-    "dependencies"
+    "pypi",
+    "python",
+    "security",
+    "supply chain"
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "workspaceContains:**/package.json"
+    "workspaceContains:**/package.json",
+    "workspaceContains:**/pyproject.toml",
+    "workspaceContains:**/requirements.txt",
+    "workspaceContains:**/Pipfile",
+    "workspaceContains:**/composer.json"
   ],
   "capabilities": {
     "untrustedWorkspaces": {

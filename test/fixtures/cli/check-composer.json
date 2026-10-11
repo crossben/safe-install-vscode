@@ -1,0 +1,26 @@
+{
+  "format": "composer",
+  "lockfile": "composer.lock",
+  "worst": "block",
+  "skipped": 0,
+  "failed": 0,
+  "warnings": [],
+  "packages": [
+    {
+      "id": "monolog/monolog@3.7.0",
+      "name": "monolog/monolog",
+      "version": "3.7.0",
+      "direct": true,
+      "dev": false,
+      "score": 100,
+      "level": "block",
+      "findings": [
+        {
+          "rule": "SI-INT-001",
+          "severity": "block",
+          "message": "lockfile pins commit 111111111111, but the registry's 3.7.0 points at f4393b648b78"
+        }
+      ]
+    }
+  ]
+}

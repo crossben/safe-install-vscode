@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'node:path';
-import { Checker } from './checker';
+import { Checker, MANIFEST_SELECTOR } from './checker';
 import { ScriptsView, explainRule, showWhy } from './scripts';
 import { SafeInstall } from './service';
 
@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext): Api {
       scripts.setProjects(checker.projectDirs());
       void scripts.refresh();
     }),
-    vscode.languages.registerCodeActionsProvider({ language: 'json', pattern: '**/package.json' }, new QuickFixes(), {
+    vscode.languages.registerCodeActionsProvider(MANIFEST_SELECTOR, new QuickFixes(), {
       providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
     }),
   );

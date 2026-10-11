@@ -83,3 +83,22 @@ describeUnix('quick fixes', () => {
     assert.ok(titles.some((t) => /^Explain SI-[A-Z]+-\d{3} \(safe-install\)$/.test(t)), titles.join(', '));
   });
 });
+
+describeUnix('Composer projects', () => {
+  afterEach(async () => {
+    await vscode.workspace.getConfiguration('safeInstall').update('path', undefined, vscode.ConfigurationTarget.Global);
+  });
+
+  it('marks a dependency in composer.json', async () => {
+    await checked();
+    const composer = vscode.Uri.file(path.join(root, 'test/fixtures/workspace/php/composer.json'));
+    const diags = vscode.languages.getDiagnostics(composer).filter((d) => d.source === 'safe-install');
+    assert.equal(diags.length, 1, JSON.stringify(diags));
+    const [d] = diags;
+    assert.ok(d);
+    assert.equal(d.severity, vscode.DiagnosticSeverity.Error);
+    assert.equal(d.code, 'SI-INT-001');
+    const doc = await vscode.workspace.openTextDocument(composer);
+    assert.equal(doc.getText(d.range), 'monolog/monolog');
+  });
+});

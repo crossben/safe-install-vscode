@@ -1,5 +1,5 @@
 /** The first CLI release with `scripts --format json` and `explain --format json`. */
-export const MIN_CLI_VERSION = '0.2.3';
+export const MIN_CLI_VERSION = '0.2.3'; // Python/PHP markers need 0.3.0, but npm works with 0.2.3
 
 export type Semver = readonly [number, number, number];
 
